@@ -3,18 +3,15 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
 (function () {
-    var host = 'http://clonn.info:3001',
+    var host = 'http://clonn.info:3000',
         socket;
 
-    window.onload = functioon () {
+    socket = io.connect(host);
 
-        socket = io.connect(host);
-
-        socket.on('news', function (data) {
-            console.log(data);
-            socket.emit('my other event', { my: 'data' });
-        });
-    };
+    socket.on('news', function (data) {
+        console.log(data);
+        socket.emit('my other event', { my: 'data' });
+    });
 
 })();
 </script>
