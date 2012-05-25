@@ -2,6 +2,28 @@ body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
+#display-message {
+    border: 1px solid #000;
+    height: 400px;
+    width: 100%;
+    overflow: scroll;
+}
+#display-message .message {
+    display: inline-block;
+    width: 80%;
+    overflow: hidden;
+}
+#display-message .time {
+    color: #ccc;
+}
+input[type=submit],
+input[type=text] {
+    width: 300px; 
+    height: 2em;
+}
+input[type=submit] {
+    width: auto; 
+}
 
 a {
   color: #00B7FF;
