@@ -38,9 +38,8 @@ app.listen(3000, function(){
 var io = require('socket.io').listen(app);
 
 io.sockets.on('connection', function (socket) {
-    socket.emit('news', { hello: 'world' });
-    socket.on('my other event', function (data) {
+    socket.on('sendMsg', function (data) {
         console.log(data);
-        console.log(socket.handshake.headers);
+        socket.broadcast.emit("recieveMsg", {status: "ok", msg: data.msg});
     });
 });
