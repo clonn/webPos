@@ -4,6 +4,7 @@
  */
 
 var express = require('express')
+  , config  = require('./config.ini')
   , routes = require('./routes')
   , mongoose = require('mongoose');
 
@@ -13,7 +14,7 @@ var Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId;
 
 // Danger! Write user/pwd here is not secure.
-mongoose.connect('mongodb://guest:guest@flame.mongohq.com:27047/webPos');
+mongoose.connect(config.db);
 
 // Define MongoDB Schema and Model
 
