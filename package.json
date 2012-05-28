@@ -1,6 +1,6 @@
 {
   "name": "webPos",
-  "version": "0.0.1-1",
+  "version": "0.0.1-2",
   "private": true,
   "scripts": {
     "start": "app.js"
@@ -8,10 +8,14 @@
   "dependencies": {
     "express": "2.5.8",
     "ejs": ">= 0.0.1",
-    "socket.io": "0.9.6"
+    "socket.io": "0.9.6",
+    "mongoose": "2.6.5"
   },
   "engines": {
     "node": "v0.6.x"
   },
+  "domains": [
+    "webpos.nodejs.tw"
+  ],
   "subdomain": "npt8tw"
 }
