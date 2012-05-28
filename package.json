@@ -1,10 +1,17 @@
 {
-    "name": "webPos"
-  , "version": "0.0.1"
-  , "private": true
-  , "dependencies": {
-      "express": "2.5.8"
-    , "ejs": ">= 0.0.1"
-    , "socket.io": "0.9.6"
-  }
+  "name": "webPos",
+  "version": "0.0.1-1",
+  "private": true,
+  "scripts": {
+    "start": "app.js"
+  },
+  "dependencies": {
+    "express": "2.5.8",
+    "ejs": ">= 0.0.1",
+    "socket.io": "0.9.6"
+  },
+  "engines": {
+    "node": "v0.6.x"
+  },
+  "subdomain": "npt8tw"
 }
