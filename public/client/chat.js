@@ -6,8 +6,7 @@
  * @version 2012/05/26
  */
 (function ($) {
-    //var host = 'http://clonn.info:3000',
-    var host = 'http://localhost:3000',
+    var host = window.location.hostname,
         displayNode,
         chatTpl,
         socket;
