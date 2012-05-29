@@ -4,7 +4,28 @@
  */
 
 var express = require('express')
-  , routes = require('./routes');
+  , routes = require('./routes')
+  , mongoose = require('mongoose');
+
+// Setup MongoDB
+
+var Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId;
+
+// Danger! Write user/pwd here is not secure.
+mongoose.connect('mongodb://guest:guest@flame.mongohq.com:27047/webPos');
+
+// Define MongoDB Schema and Model
+
+var WebChat = new Schema({
+    who       : String
+  , msg       : String
+  , date      : Date
+});
+var Chat = mongoose.model('WebChat', WebChat);
+
+
+// Setup Express
 
 var app = module.exports = express.createServer();
 
@@ -40,6 +61,13 @@ var io = require('socket.io').listen(app);
 io.sockets.on('connection', function (socket) {
     socket.on('sendMsg', function (data) {
         console.log(data);
+        var chat = new Chat();
+        chat.who = 'guest';
+        chat.msg = data.msg;
+        chat.date = new Date();
+        chat.save(function (err) {
+            if (!err) console.log('Message saved to mongodb.');
+        });
         socket.broadcast.emit("recieveMsg", {status: "ok", msg: data.msg});
     });
 });
