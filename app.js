@@ -25,7 +25,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new FacebookStrategy({
     clientID: config.facebook.appid,
     clientSecret: config.facebook.secret,
-    callbackURL: "http://localhost:3000/auth/facebook/callback"
+    callbackURL: "http://userhost/auth/facebook/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
@@ -82,8 +82,10 @@ app.configure('production', function(){
 
 // Routes
 app.get('/', function(req, res){
-  if (req.user.id) {
-    res.cookie('userid', req.user.id);
+  if (req.user) {
+      if (req.user.id) {
+        res.cookie('userid', req.user.id);
+      }
   }
   res.render('index', { user: req.user });
 });
@@ -97,17 +99,26 @@ app.get('/login', function(req, res){
 });
 
 app.get('/chat', ensureAuthenticated, function(req, res){
-  res.render('chat', {title: 'this is a chat room', user: req.user });
+  var docs;
+  var query = Chat.find({});
+  query.sort('date', 1);
+  query.exec(function (err, val) {
+      docs = val;
+      res.render('chat', {
+        title: 'Node.js Taiwan party',
+        user: req.user,
+        users: userData,
+        docs: docs
+      });
+  });
 });
 
 app.get('/auth/facebook',
   passport.authenticate('facebook'),
   function(req, res){
-    // The request will be redirected to Facebook for authentication, so this
-    // function will not be called.
 });
 
-app.get('/auth/facebook/callback', 
+app.get('/auth/facebook/callback',
   passport.authenticate('facebook', { failureRedirect: '/login' }),
   function(req, res) {
     res.redirect('/');
@@ -122,23 +133,44 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     userData[req.user.id] = req.user;
     res.cookie('userid', req.user.id);
-    return next(); 
+    return next();
   }
   res.redirect('/login')
 }
 
-app.listen(process.env.PORT || process.env.VCAP_APP_PORT || process.env.npm_package_config_port || 3000, function(){
-  console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
-});
+function checkSocketExist(client, id) {
+  var i;
+
+  for (i in client) {
+    if (client[i] == id) {
+      return;
+    }
+  }
+}
+
+app.listen(process.env.VMC_APP_PORT || 3000);
 
 var io = require('socket.io').listen(app);
 
+if(process.env.VMC_APP_PORT) {
+    io.set('transports', [
+        'flashsocket',
+        'htmlfile',
+        'xhr-polling',
+        'jsonp-polling'
+    ]);
+}
+
 io.sockets.on('connection', function (socket) {
     var userCookie = cookieParser(socket.handshake.headers.cookie);
-    console.log(userCookie);
     ensureSocketAuth(userCookie);
-    socket.on('sendMsg', function (data) {
 
+    socket.broadcast.emit("login", {
+        status: "ok",
+        userid: userCookie.userid
+    });
+
+    socket.on('sendMsg', function (data) {
         var chat = new Chat();
         chat.who = userCookie.userid;
         chat.msg = data.msg;
@@ -147,8 +179,8 @@ io.sockets.on('connection', function (socket) {
             if (!err) console.log('Message saved to mongodb.');
         });
         socket.broadcast.emit("recieveMsg", {
-            status: "ok", 
-            userid: userCookie.userid, 
+            status: "ok",
+            userid: userCookie.userid,
             msg: data.msg
         });
     });
