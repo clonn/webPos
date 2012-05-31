@@ -1,0 +1,21 @@
+<h1><%= title %></h1>
+
+<div id="display-message">
+</div>
+
+<form id="chat" action="#" method="POST">
+    <input id="message" type="text" name="message">
+    <input type="submit" value="Submit">
+</form>
+<div id="js-template">
+    <div class="chat-list">
+        <span class="message">
+        </span>
+        <span class="time">
+        </span>
+    </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/client/chat.js"></script>
