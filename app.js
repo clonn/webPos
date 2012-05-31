@@ -5,11 +5,14 @@
 
 var express = require('express'),
     config  = require('./config.ini'),
+    cookieParser = require('connect').utils.parseCookie,
     routes = require('./routes'),
     mongoose = require('mongoose'),
     passport = require('passport'),
     util = require('util'),
     FacebookStrategy = require('passport-facebook').Strategy;
+
+var userData = {};
 
 // set pasport
 passport.serializeUser(function(user, done) {
@@ -79,6 +82,9 @@ app.configure('production', function(){
 
 // Routes
 app.get('/', function(req, res){
+  if (req.user.id) {
+    res.cookie('userid', req.user.id);
+  }
   res.render('index', { user: req.user });
 });
 
@@ -90,7 +96,7 @@ app.get('/login', function(req, res){
   res.render('login', { user: req.user });
 });
 
-app.get('/chat', function(req, res){
+app.get('/chat', ensureAuthenticated, function(req, res){
   res.render('chat', {title: 'this is a chat room', user: req.user });
 });
 
@@ -113,7 +119,11 @@ app.get('/logout', function(req, res){
 });
 
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
+  if (req.isAuthenticated()) {
+    userData[req.user.id] = req.user;
+    res.cookie('userid', req.user.id);
+    return next(); 
+  }
   res.redirect('/login')
 }
 
@@ -124,15 +134,28 @@ app.listen(process.env.PORT || process.env.VCAP_APP_PORT || process.env.npm_pack
 var io = require('socket.io').listen(app);
 
 io.sockets.on('connection', function (socket) {
+    var userCookie = cookieParser(socket.handshake.headers.cookie);
+    console.log(userCookie);
+    ensureSocketAuth(userCookie);
     socket.on('sendMsg', function (data) {
-        console.log(data);
+
         var chat = new Chat();
-        chat.who = 'guest';
+        chat.who = userCookie.userid;
         chat.msg = data.msg;
         chat.date = new Date();
         chat.save(function (err) {
             if (!err) console.log('Message saved to mongodb.');
         });
-        socket.broadcast.emit("recieveMsg", {status: "ok", msg: data.msg});
+        socket.broadcast.emit("recieveMsg", {
+            status: "ok", 
+            userid: userCookie.userid, 
+            msg: data.msg
+        });
     });
 });
+
+function ensureSocketAuth(cookie) {
+    if (! userData[cookie.userid]) {
+        return;
+    }
+}
