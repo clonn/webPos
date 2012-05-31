@@ -12,10 +12,18 @@
         socket;
 
     $(document).ready(function () {
-        displayNode = $("#display-message");
-        chatTpl = $("#js-template");
-        socket = io.connect(host);
-        
+        var displayNode = $("#display-message"),
+            chatTpl = $("#js-template"),
+            userTpl = $("#js-user-template"),
+            socket = io.connect(host);
+
+
+        String.prototype.sanitizeHTML=function (white,black) {
+           if (!white) white="b|i|p|br";//allowed tags
+           if (!black) black="script|object|embed";//complete remove tags
+           e=new RegExp("(<("+black+")[^>]*>.*</\\2>|(?!<[/]?("+white+")(\\s[^<]*>|[/]>|>))<[^<>]*>|(?!<[^<>\\s]+)\\s[^</>]+(?=[/>]))", "gi");
+           return this.replace(e,"");
+        }
 
         function getCookie(name)
         {
@@ -41,25 +49,46 @@
             return unescape(document.cookie.substring(offset, endstr));
         }
 
-        socket.on("recieveMsg", function (data) {
-            if (data.status !== "ok") {
-                alert(1);
-                return;
-            }
-            var msgNode = self.find("#message"),
-                newMsgNode= $(chatTpl.html());
+        function showMsg(data) {
+            var newMsgNode= $(chatTpl.html());
 
-
-            console.log(data);
             newMsgNode.find(".snapshot").html([
-                "<img src='http://graph.facebook.com/",
+                "<a href='http://www.facebook.com/",
                 data.userid,
-                "/picture'>",    
+                "' target='_blank'><img src='http://graph.facebook.com/",
+                data.userid,
+                "/picture'></a>",
             ].join(""));
 
-            newMsgNode.find(".message").html(data.msg);
-            newMsgNode.find(".time").html(", Time: " + new Date().getTime());
-            displayNode.append(newMsgNode);
+            newMsgNode.find(".message").html(data.msg.sanitizeHTML());
+            newMsgNode.find(".time").html(", Time: " + new Date().toUTCString());
+
+            displayNode.append(newMsgNode).scrollTop(99999999999999);
+        }
+
+        socket.on("recieveMsg", function (data) {
+            if (data.status !== "ok") {
+                alert("Recieve message error");
+                return;
+            }
+            showMsg(data);
+        });
+
+        socket.on("login", function (data) {
+            var loginNode,
+                template;
+
+            if (data.status == "ok") {
+                loginNode = $("#login-user");
+                window.login = loginNode;
+                console.log(data.userid);
+
+                if (loginNode.find("#user-" + data.userid).length < 1) {
+                    template = userTpl.html();
+                    template = template.replace(/{{user-id}}/g, data.userid);
+                    loginNode.append(template);
+                }
+            }
         });
 
         $("#chat").submit(function (e) {
@@ -70,19 +99,18 @@
                 newMsgNode= $(chatTpl.html()),
                 selfValue = msgNode.val();
 
-            newMsgNode.find(".snapshot").html([
-                "<img src='http://graph.facebook.com/",
-                getCookie('userid'),
-                "/picture'>",    
-            ].join(""));
+            var data = {
+                    userid: getCookie('userid'),
+                    msg: selfValue
+                };
 
-            newMsgNode.find(".message").html(selfValue);
-            newMsgNode.find(".time").html(", Time: " + new Date().getTime());
-            displayNode.append(newMsgNode);
+
+            showMsg(data);
             msgNode.val("");
             socket.emit("sendMsg", {msg: selfValue});
-
         });
+
+        displayNode.scrollTop(99999999999999);
 
     });
 })(jQuery);

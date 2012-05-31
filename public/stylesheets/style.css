@@ -1,12 +1,15 @@
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: url(http://acadtaj.cloudfoundry.com/images/back.png);
 }
 #display-message {
+    padding: 5px 0 0 5px;
+    background: #fff;
     border: 1px solid #000;
     height: 400px;
     width: 100%;
-    overflow: scroll;
+    overflow: auto;
 }
 #display-message .message {
     display: inline-block;
@@ -14,17 +17,23 @@ body {
     overflow: hidden;
 }
 #display-message .time {
+    height: 1.2em;
+    display: inline-block;
+    width: 200px;
+    overflow: hidden;
     color: #ccc;
 }
 input[type=submit],
 input[type=text] {
-    width: 300px; 
+    width: 700px;
     height: 2em;
 }
 input[type=submit] {
-    width: auto; 
+    width: auto;
 }
-
 a {
   color: #00B7FF;
+}
+#js-user-template {
+  display: none;
 }

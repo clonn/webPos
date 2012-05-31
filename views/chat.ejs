@@ -1,9 +1,24 @@
 <h1><%= title %></h1>
 
-<div id="display-message">
+<div id="login-user">
+<% for (i in users) { %>
+<span id="user-<%= i %>"><a href="http://www.facebook.com/<%= i %>" target="_blank"><img src="http://graph.facebook.com/<%= i %>/picture"></a></span>
+<% } %>
 </div>
 
-<form id="chat" action="#" method="POST">
+<div id="display-message">
+<% for (i in docs) { %>
+    <div class="chat-list">
+        <span class="snapshot">
+            <a href="http://www.facebook.com/<%= docs[i].who %>" target="_blank"><img src="http://graph.facebook.com/<%= docs[i].who %>/picture"></a>
+        </span>
+        <span class="message"><%= docs[i].msg %></span>
+        <span class="time"><%= docs[i].date %></span>
+    </div>
+<% } %>
+</div>
+
+<form id="chat" action="#" method="POST" class="well">
     <input id="message" type="text" name="message">
     <input type="submit" value="Submit">
 </form>
@@ -16,6 +31,9 @@
         <span class="time">
         </span>
     </div>
+</div>
+<div id="js-user-template">
+    <span id="user-{{user-id}}"><a href="http://www.facebook.com/{{user-id}}" target="_blank"><img src="http://graph.facebook.com/{{user-id}}/picture"></a></span>
 </div>
 
 <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
